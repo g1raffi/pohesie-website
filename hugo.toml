@@ -1,0 +1,17 @@
+baseURL = 'https://example.org/'
+locale = 'de-CH'
+defaultContentLanguage = 'de'
+title = 'PoHeSie — Drei Freunde. Gute Sandwiches.'
+disableKinds = ['taxonomy', 'term', 'RSS']
+
+[params]
+  description = 'Drei Freunde aus Sarnen, eine gemeinsame Kochleidenschaft. PoHeSie plant frische Sandwiches am Wochenmarkt – zum Start mit Bánh mì.'
+  season = 'Sommer 2027'
+  email = ''
+  marketStatus = 'Unser Start ist in Planung. Die ersten Markttage geben wir hier bekannt, sobald sie feststehen.'
+
+[caches.images]
+  dir = ':cacheDir/images'
+
+[outputs]
+  home = ['HTML']

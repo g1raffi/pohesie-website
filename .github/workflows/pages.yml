@@ -1,0 +1,61 @@
+name: Build and deploy Hugo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install pinned Hugo
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(tr -d '\r\n' < .hugo-version)"
+          ARCHIVE="hugo_${VERSION}_linux-amd64.tar.gz"
+          RELEASE="https://github.com/gohugoio/hugo/releases/download/v${VERSION}"
+          mkdir -p "${RUNNER_TEMP}/hugo"
+          cd "${RUNNER_TEMP}/hugo"
+          curl --fail --location --retry 3 -o "$ARCHIVE" "$RELEASE/$ARCHIVE"
+          curl --fail --location --retry 3 -o checksums.txt "$RELEASE/hugo_${VERSION}_checksums.txt"
+          grep "  ${ARCHIVE}$" checksums.txt | sha256sum --check --strict
+          tar -xzf "$ARCHIVE"
+          echo "${RUNNER_TEMP}/hugo" >> "$GITHUB_PATH"
+      - name: Configure Pages
+        if: github.event_name != 'pull_request'
+        id: pages
+        uses: actions/configure-pages@v6
+      - name: Build
+        env:
+          PAGES_URL: ${{ steps.pages.outputs.base_url }}
+        run: hugo --minify --baseURL "${PAGES_URL:-https://example.org}/" --cacheDir "${RUNNER_TEMP}/hugo-cache"
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: public
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

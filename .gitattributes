@@ -1,0 +1,13 @@
+# Textdateien im Repository und beim Checkout mit Linux-Zeilenenden.
+* text=auto eol=lf
+
+# Binaerdateien niemals als Text konvertieren.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.exe binary
